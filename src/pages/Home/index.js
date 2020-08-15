@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Nav,
@@ -13,9 +13,26 @@ import {
   ListGroup,
 } from "react-bootstrap";
 import { FaCartPlus, FaShoppingCart, FaCartArrowDown } from "react-icons/fa";
+import axios from "axios";
 
 export default function Home() {
-  useState(() => {});
+  const [pokemons, setPokemons] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("https://pokeapi.co/api/v2/pokemon?offset=0&limit=9")
+      .then(({ data }) => {
+        const response = data;
+        let pokes = [];
+
+        Promise.all(
+          response.results.map((pokemon) => axios.get(pokemon.url))
+        ).then((res) => {
+          res.map((items) => pokes.push(items.data));
+          setPokemons(pokes);
+        });
+      });
+  });
 
   return (
     <>
@@ -40,68 +57,30 @@ export default function Home() {
         <Row>
           <Col sm={8}>
             <Row>
-              <Col md={4}>
-                <Card className="mb-3">
-                  <Card.Img
-                    className="p-2"
-                    variant="top"
-                    src="https://pokeres.bastionbot.org/images/pokemon/150.png"
-                  />
-                  <Card.Body className="p-2">
-                    <Card.Title>Mewtwo</Card.Title>
-                    <Card.Text>Some description</Card.Text>
-                    <Button
-                      variant="outline-info"
-                      className="float-right"
-                      size="sm"
-                    >
-                      Comprar <FaCartPlus className="mb-1" />
-                    </Button>
-                  </Card.Body>
-                </Card>
-              </Col>
-
-              <Col md={4}>
-                <Card className="mb-3">
-                  <Card.Img
-                    className="p-2"
-                    variant="top"
-                    src="https://pokeres.bastionbot.org/images/pokemon/1.png"
-                  />
-                  <Card.Body className="p-2">
-                    <Card.Title>Bulbasaur</Card.Title>
-                    <Card.Text>Some description</Card.Text>
-                    <Button
-                      variant="outline-info"
-                      className="float-right"
-                      size="sm"
-                    >
-                      Comprar <FaCartPlus className="mb-1" />
-                    </Button>
-                  </Card.Body>
-                </Card>
-              </Col>
-
-              <Col md={4}>
-                <Card className="mb-3">
-                  <Card.Img
-                    className="p-2"
-                    variant="top"
-                    src="https://pokeres.bastionbot.org/images/pokemon/4.png"
-                  />
-                  <Card.Body className="p-2">
-                    <Card.Title>Charmander</Card.Title>
-                    <Card.Text>Some description</Card.Text>
-                    <Button
-                      variant="outline-info"
-                      className="float-right"
-                      size="sm"
-                    >
-                      Comprar <FaCartPlus className="mb-1" />
-                    </Button>
-                  </Card.Body>
-                </Card>
-              </Col>
+              {pokemons.map((pokemon) => (
+                <Col key={pokemon.id} md={4}>
+                  <Card className="mb-3">
+                    <Card.Img
+                      className="p-2"
+                      variant="top"
+                      src={`https://pokeres.bastionbot.org/images/pokemon/${pokemon.id}.png`}
+                    />
+                    <Card.Bo dy className="p-2">
+                      <Card.Title className="text-capitalize">
+                        {pokemon.name}
+                      </Card.Title>
+                      <Card.Text>Some description</Card.Text>
+                      <Button
+                        variant="outline-info"
+                        className="float-right"
+                        size="sm"
+                      >
+                        Comprar <FaCartPlus className="mb-1" />
+                      </Button>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              ))}
             </Row>
           </Col>
           <Col sm={4}>
